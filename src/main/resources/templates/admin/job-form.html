@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${job.id != null} ? 'Edit Job' : 'Post Job'">Job – CampusConnect</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+  <div th:replace="fragments/sidebar :: sidebar('jobs')"></div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+        <span class="page-title" th:text="${job.id != null} ? 'Edit Job' : 'Post New Job'">Job</span>
+      </div>
+      <div class="topbar-right">
+        <a th:href="@{/admin/jobs}" class="btn btn-ghost btn-sm">← Back</a>
+      </div>
+    </header>
+
+    <main class="page-body">
+      <div style="max-width:720px;margin:0 auto;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"
+                  th:text="${job.id != null} ? '✏️ Edit Job Posting' : '💼 New Job Posting'">Form</span>
+          </div>
+
+          <form th:action="${job.id != null}
+                           ? @{/admin/jobs/{id}/update(id=${job.id})}
+                           : @{/admin/jobs/save}"
+                th:object="${job}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="form-grid mb-3">
+              <div class="form-group">
+                <label class="form-label" for="title">Job Title *</label>
+                <input class="form-control" type="text" id="title" th:field="*{title}"
+                       placeholder="e.g. Backend Developer" required/>
+                <span class="form-error" th:errors="*{title}"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="company">Company *</label>
+                <input class="form-control" type="text" id="company"
+                       placeholder="e.g. Infosys" required/>
+              </div>
+            </div>
+
+            <div class="form-grid mb-3">
+              <div class="form-group">
+                <label class="form-label" for="type">Job Type *</label>
+                <select class="form-control" id="type" th:field="*{type}" required>
+                  <option value="">Select type</option>
+                  <option value="Full-Time">Full-Time</option>
+                  <option value="Part-Time">Part-Time</option>
+                  <option value="Internship">Internship</option>
+                  <option value="Remote">Remote</option>
+                  <option value="Contract">Contract</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="location">Location *</label>
+                <input class="form-control" type="text" id="location" th:field="*{location}"
+                       placeholder="e.g. Bangalore / Remote" required/>
+              </div>
+            </div>
+
+            <div class="form-grid mb-3">
+              <div class="form-group">
+                <label class="form-label" for="deadline">Application Deadline *</label>
+                <input class="form-control" type="datetime-local" id="deadline" th:field="*{deadline}" required/>
+              </div>
+            </div>
+            
+            <div class="form-group mb-3">
+              <label class="form-label" for="description">Job Description *</label>
+              <textarea class="form-control" id="description" th:field="*{description}"
+                        rows="5" placeholder="Describe the role, responsibilities, and requirements…" required></textarea>
+            </div>
+
+            <hr class="divider"/>
+            <div class="flex gap-3 flex-wrap">
+              <button type="submit" class="btn btn-primary"
+                      th:text="${job.id != null} ? 'Update Job' : 'Post Job'">Post</button>
+              <a th:href="@{/admin/jobs}" class="btn btn-ghost">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script th:src="@{/js/sidebar.js}"></script>
+</body>
+</html>

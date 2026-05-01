@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Assignments – CampusConnect</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div class="app-shell">
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+  <div th:replace="~{fragments/sidebar :: sidebar('assignments')}"></div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+        <span class="page-title">Assignments</span>
+      </div>
+      <div class="topbar-right">
+        <!-- Filter -->
+        <select class="form-control" style="max-width:150px;padding:.45rem .75rem;font-size:.82rem;"
+                onchange="location='?status='+this.value">
+          <option value="">All Status</option>
+          <option value="ACTIVE"    th:selected="${param.status == 'ACTIVE'}">Active</option>
+          <option value="DUE_SOON"  th:selected="${param.status == 'DUE_SOON'}">Due Soon</option>
+          <option value="OVERDUE"   th:selected="${param.status == 'OVERDUE'}">Overdue</option>
+          <option value="COMPLETED" th:selected="${param.status == 'COMPLETED'}">Completed</option>
+        </select>
+      </div>
+    </header>
+
+    <main class="page-body">
+
+      <!-- Search + heading -->
+      <div class="section-heading mb-4">
+        <h2>All Assignments</h2>
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search assignments…" id="searchInput" oninput="filterCards()"/>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div th:if="${#lists.isEmpty(assignments)}" class="empty-state card">
+        <div class="empty-icon">📭</div>
+        <p>No assignments found.</p>
+      </div>
+
+      <!-- Assignment cards grid -->
+      <div class="three-col-grid" id="assignmentGrid">
+        <div th:each="a : ${assignments}"
+             class="assignment-card"
+             th:classappend="${a.status == 'DUE_SOON'} ? ' due-soon' : (${a.status == 'OVERDUE'} ? ' overdue' : '')"
+             th:attr="data-title=${a.title}">
+
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="assignment-title" th:text="${a.title}">Assignment Title</div>
+            <span class="badge"
+                  th:classappend="${a.status == 'OVERDUE'}   ? 'badge-red'
+                               : (${a.status == 'DUE_SOON'}  ? 'badge-amber'
+                               : (${a.status == 'COMPLETED'} ? 'badge-green' : 'badge-blue'))"
+                  th:text="${a.status}">Active</span>
+          </div>
+
+          <div class="assignment-desc" th:text="${a.description}">Description here…</div>
+
+          <div class="assignment-meta">
+            <span>📅 Due <strong th:text="${#temporals.format(a.dueDate,'dd MMM yyyy')}">01 Jan</strong></span>
+          </div>
+
+          <div class="flex gap-2 mt-2">
+            <a th:href="@{/student/assignments/{id}(id=${a.id})}" class="btn btn-outline btn-sm">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" th:if="${totalPages > 1}">
+        <button class="page-btn" th:disabled="${currentPage == 0}"
+                th:onclick="|location='?page=${currentPage - 1}'|">‹</button>
+        <button th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                class="page-btn"
+                th:classappend="${i == currentPage} ? ' active'"
+                th:onclick="|location='?page=${i}'|"
+                th:text="${i + 1}">1</button>
+        <button class="page-btn" th:disabled="${currentPage + 1 == totalPages}"
+                th:onclick="|location='?page=${currentPage + 1}'|">›</button>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script th:src="@{/js/sidebar.js}"></script>
+<script>
+  function filterCards() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#assignmentGrid .assignment-card').forEach(card => {
+      card.style.display = card.dataset.title.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>

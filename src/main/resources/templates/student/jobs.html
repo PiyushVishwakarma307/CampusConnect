@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Job Opportunities – CampusConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+  <div th:replace="fragments/sidebar :: sidebar('jobs')"></div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+        <span class="page-title">Job Opportunities</span>
+      </div>
+      <div class="topbar-right">
+        <select class="form-control" style="max-width:140px;padding:.45rem .75rem;font-size:.82rem;"
+                onchange="location='?type='+this.value">
+          <option value="">All Types</option>
+          <option value="Full-Time"  th:selected="${param.type == 'Full-Time'}">Full-Time</option>
+          <option value="Part-Time"  th:selected="${param.type == 'Part-Time'}">Part-Time</option>
+          <option value="Internship" th:selected="${param.type == 'Internship'}">Internship</option>
+          <option value="Remote"     th:selected="${param.type == 'Remote'}">Remote</option>
+        </select>
+      </div>
+    </header>
+
+    <main class="page-body">
+
+      <div class="section-heading mb-4">
+        <h2>Open Positions <span class="badge badge-blue" th:text="${totalJobs}">0</span></h2>
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search jobs…" id="searchInput" oninput="filterJobs()"/>
+        </div>
+      </div>
+
+      <div th:if="${#lists.isEmpty(jobs)}" class="empty-state card">
+        <div class="empty-icon">🗂️</div>
+        <p>No job opportunities posted yet. Check back soon!</p>
+      </div>
+
+      <div class="three-col-grid" id="jobGrid">
+        <div th:each="j : ${jobs}" class="job-card" th:attr="data-title=${j.title + ' ' + j.company}">
+
+          <div class="job-card-top">
+            <div>
+              <div class="job-title" th:text="${j.title}">Software Engineer</div>
+              <div class="job-company" th:text="${j.company}">TechCorp</div>
+            </div>
+            <span class="badge"
+                  th:classappend="${j.type == 'Internship'} ? 'badge-purple'
+                               : (${j.type == 'Remote'}     ? 'badge-blue'
+                               : (${j.type == 'Part-Time'}  ? 'badge-amber' : 'badge-green'))"
+                  th:text="${j.type}">Full-Time</span>
+          </div>
+
+          <p class="assignment-desc"
+             th:text="${#strings.abbreviate(j.description, 100)}">Description…</p>
+
+          <div class="job-meta">
+            <span class="badge badge-gray">📍 <span th:text="${j.location}">Location</span></span>
+            <span class="badge badge-gray">📅 <span th:text="${#temporals.format(j.deadline,'dd MMM')}">Deadline</span></span>
+          </div>
+
+          <div class="job-actions">
+            <a th:href="@{/student/jobs/{id}(id=${j.id})}" class="btn btn-primary btn-sm">Apply Now</a>
+            <button class="btn btn-ghost btn-sm"
+                    onclick="openModal(this)"
+                    th:attr="data-title=${j.title},
+                             data-company=${j.company},
+                             data-type=${j.type},
+                             data-location=${j.location},
+                             data-desc=${j.description},
+                             data-deadline=${j.deadline}">Details</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" th:if="${totalPages > 1}">
+        <button class="page-btn" th:disabled="${currentPage == 0}"
+                th:onclick="|location='?page=${currentPage - 1}'|">‹</button>
+        <button th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                class="page-btn"
+                th:classappend="${i == currentPage} ? ' active'"
+                th:onclick="|location='?page=${i}'|"
+                th:text="${i + 1}">1</button>
+        <button class="page-btn" th:disabled="${currentPage + 1 == totalPages}"
+                th:onclick="|location='?page=${currentPage + 1}'|">›</button>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Job Detail Modal -->
+<div class="modal-backdrop" id="jobModal" style="display:none;" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTitle">Job Title</h3>
+      <button class="modal-close" onclick="document.getElementById('jobModal').style.display='none'">✕</button>
+    </div>
+    <p class="text-muted text-small mb-3" id="modalCompany">Company</p>
+    <div class="flex gap-2 flex-wrap mb-3" id="modalBadges"></div>
+    <p id="modalDesc" style="font-size:.9rem;line-height:1.7;color:var(--text-muted);">Description</p>
+    <hr class="divider"/>
+    <div class="flex gap-2 flex-wrap">
+      <a href="#" class="btn btn-primary" id="modalApply">Apply Now</a>
+      <button class="btn btn-ghost" onclick="document.getElementById('jobModal').style.display='none'">Close</button>
+    </div>
+  </div>
+</div>
+
+<script th:src="@{/js/sidebar.js}"></script>
+<script>
+  function filterJobs() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#jobGrid .job-card').forEach(c => {
+      c.style.display = c.dataset.title.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  function openModal(btn) {
+    document.getElementById('modalTitle').textContent   = btn.dataset.title;
+    document.getElementById('modalCompany').textContent = btn.dataset.company;
+    document.getElementById('modalDesc').textContent    = btn.dataset.desc;
+    const badges = `
+      <span class="badge badge-green">${btn.dataset.type}</span>
+      <span class="badge badge-gray">📍 ${btn.dataset.location}</span>
+      ${btn.dataset.salary ? `<span class="badge badge-blue">💰 ${btn.dataset.salary}</span>` : ''}
+      <span class="badge badge-amber">📅 Deadline: ${btn.dataset.deadline}</span>
+    `;
+    document.getElementById('modalBadges').innerHTML = badges;
+    document.getElementById('jobModal').style.display = 'flex';
+  }
+
+  function closeModal(e) {
+    if (e.target.id === 'jobModal') document.getElementById('jobModal').style.display = 'none';
+  }
+</script>
+</body>
+</html>

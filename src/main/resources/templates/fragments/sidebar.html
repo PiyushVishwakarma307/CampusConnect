@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<!-- =====================================================
+     FRAGMENT: sidebar  (include via th:replace)
+     ===================================================== -->
+<aside th:fragment="sidebar(activePage)" class="sidebar" id="sidebar">
+
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <div class="logo-icon">🎓</div>
+    <span>CampusConnect</span>
+  </div>
+
+  <!-- ── Student Navigation ── -->
+  <nav class="sidebar-nav" sec:authorize="hasRole('STUDENT')">
+    <p class="nav-section-label">Student</p>
+
+    <a th:href="@{/student/dashboard}"
+       th:classappend="${activePage == 'dashboard'} ? 'active'"
+       class="nav-link">
+      <span class="nav-icon">🏠</span> Dashboard
+    </a>
+    <a th:href="@{/student/assignments}"
+       th:classappend="${activePage == 'assignments'} ? 'active'"
+       class="nav-link">
+      <span class="nav-icon">📚</span> Assignments
+    </a>
+    <a th:href="@{/student/jobs}"
+       th:classappend="${activePage == 'jobs'} ? 'active'"
+       class="nav-link">  
+      <span class="nav-icon">💼</span> Job Opportunities
+    </a>
+    <a th:href="@{/student/profile}"
+       th:classappend="${activePage == 'profile'} ? 'active'"
+       class="nav-link">
+      <span class="nav-icon">👤</span> My Profile
+    </a>
+  </nav>
+
+  <!-- ── Admin Navigation ── -->
+  <nav class="sidebar-nav" sec:authorize="hasRole('ADMIN') ">
+    <p class="nav-section-label">Admin Panel</p>
+
+    <a th:href="@{/admin/dashboard}"
+       th:classappend="${activePage == 'dashboard'} ? 'active'"
+       class="nav-link">
+      <span class="nav-icon">🏠</span> Dashboard
+    </a>
+    <a th:href="@{/admin/assignments}"
+       th:classappend="${activePage == 'assignments'} ? 'active'"
+       class="nav-link">
+      <span class="nav-icon">📚</span> Manage Assignments
+    </a>
+    <a th:href="@{/admin/jobs}"
+       th:classappend="${activePage == 'jobs'} ? 'active'"
+       class="nav-link">
+      <span class="nav-icon">💼</span> Job Postings
+    </a>
+    <a th:href="@{/admin/students}"
+       th:classappend="${activePage == 'students'} ? 'active'"
+       class="nav-link">
+      <span class="nav-icon">👥</span> Students
+    </a>
+  </nav>
+
+  <!-- Logout -->
+  <div class="sidebar-footer">
+    <form th:action="@{/logout}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <button type="submit" class="nav-link" style="color:rgba(255,255,255,0.6);">
+        <span class="nav-icon">🚪</span> Logout
+      </button>
+    </form>
+  </div>
+
+</aside>
+
+</html>

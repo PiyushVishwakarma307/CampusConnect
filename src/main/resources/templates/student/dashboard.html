@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>dashboard Dashboard – CampusConnect</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Overlay for mobile sidebar -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- Sidebar -->
+  <div th:replace="~{fragments/sidebar :: sidebar('dashboard')}"></div>
+
+  <!-- Main -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+        <span class="page-title">Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <div class="flex items-center gap-2">
+          <div class="avatar" th:text="${#strings.substring(dashboard.firstName,0,1)}">S</div>
+          <span class="text-small" style="display:none;" th:style="'display:block'" th:text="${dashboard.firstName} + ' ' + ${dashboard.lastName}">dashboard</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Body -->
+    <main class="page-body">
+
+      <!-- Welcome -->
+      <div>
+        <h1 style="font-size:1.3rem;">
+          Welcome back, <span th:text="${dashboard.firstName}">dashboard</span>! 👋
+        </h1>
+        <p class="text-muted text-small">Here's what's happening today.</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue">📚</div>
+          <div>
+            <div class="stat-label">Total Assignments</div>
+            <div class="stat-value" th:text="${dashboard.totalAssignments}">12</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">⏰</div>
+          <div>
+            <div class="stat-label">Due This Week</div>
+            <div class="stat-value" th:text="${dashboard.dueSoon}">3</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">💼</div>
+          <div>
+            <div class="stat-label">Open Jobs</div>
+            <div class="stat-value" th:text="${dashboard.openJobs}">8</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red">🔴</div>
+          <div>
+            <div class="stat-label">Overdue</div>
+            <div class="stat-value" th:text="${dashboard.overdue}">1</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col-grid">
+
+        <!-- Recent Assignments -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📚 Recent Assignments</span>
+            <a th:href="@{/student/assignments}" class="btn btn-ghost btn-sm">View All</a>
+          </div>
+
+          <div th:if="${#lists.isEmpty(dashboard.recentAssignments)}" class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>No assignments yet.</p>
+          </div>
+
+          <div th:each="a : ${dashboard.recentAssignments}" class="assignment-card mb-3"
+               th:classappend="${a.status == 'DUE_SOON'} ? 'due-soon' : (${a.status == 'OVERDUE'} ? 'overdue' : '')">
+            <div class="assignment-title" th:text="${a.title}">Assignment Title</div>
+            <div class="assignment-meta">
+              <span th:text="${a.subject}">Subject</span>
+              <span>Due: <strong th:text="${#temporals.format(a.dueDate,'dd MMM yyyy')}">01 Jan 2025</strong></span>
+            </div>
+            <div>
+              <span class="badge"
+                    th:classappend="${a.status == 'OVERDUE'} ? 'badge-red' : (${a.status == 'DUE_SOON'} ? 'badge-amber' : 'badge-blue')"
+                    th:text="${a.status}">Active</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Latest Jobs -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">💼 Latest Jobs</span>
+            <a th:href="@{/student/jobs}" class="btn btn-ghost btn-sm">View All</a>
+          </div>
+
+          <div th:if="${#lists.isEmpty(dashboard.latestJobs)}" class="empty-state">
+            <div class="empty-icon">🗂️</div>
+            <p>No jobs posted yet.</p>
+          </div>
+
+          <div th:each="j : ${dashboard.latestJobs}" class="job-card mb-3">
+            <div class="job-card-top">
+              <div>
+                <div class="job-title" th:text="${j.title}">Job Title</div>
+                <div class="job-company" th:text="${j.company}">Company</div>
+              </div>
+              <span class="badge badge-green" th:text="${j.type}">Full-Time</span>
+            </div>
+            <div class="job-meta">
+              <span class="badge badge-gray" th:text="${j.location}">Location</span>
+            </div>
+            <div class="job-actions">
+              <a th:href="@{/dashboard/jobs/{id}(id=${j.id})}" class="btn btn-primary btn-sm">Apply</a>
+              <a th:href="@{/dashboard/jobs/{id}(id=${j.id})}" class="btn btn-ghost btn-sm">Details</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script th:src="@{/js/sidebar.js}"></script>
+</body>
+</html>
