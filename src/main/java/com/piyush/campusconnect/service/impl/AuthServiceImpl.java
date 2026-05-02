@@ -17,7 +17,7 @@ public class AuthServiceImpl implements AuthService {
 
     public User authenticate(int rollNo, String password){
         User user = userRepo.findByRollNo(rollNo).orElseThrow();
-        if(encoder.matches(password, user.getPassword())){
+        if(encoder.matches(password, new String(user.getPassword()))){
             return user;
         }else {
             return null;
