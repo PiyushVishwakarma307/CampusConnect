@@ -18,7 +18,7 @@ public class User {
     @Column(name = "roll_no")
     private int rollNo;
     private String email;
-    private String password;
+    private byte[] password;
     private String role;
     private Boolean enabled;
     @Column(name = "is_first_login")
